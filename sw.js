@@ -3,7 +3,10 @@ const assets = [
   './',
   './index.html',
   './manifest.json',
-  './icon.png'
+  './icon.png',
+  './logo.png',
+  './special.jpg',
+  './bread-butter.jpg'
 ];
 
 // Install Service Worker
@@ -23,3 +26,4 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
