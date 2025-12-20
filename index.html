@@ -34,7 +34,6 @@
             align-items: center;
         }
         
-        /* New Logo Style */
         .header-logo-img {
             width: 40px;
             height: 40px;
@@ -94,13 +93,14 @@
 
         /* MENU GRID */
         .category-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:12px; margin-top:20px; }
-        .category-button{ background:white; border:1px solid var(--color-sage); padding:10px; height:90px; border-radius:12px; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+        .category-button{ background:white; border:1px solid var(--color-sage); padding:10px; height:90px; border-radius:12px; display:flex; flex-direction:column; justify-content:center; align-items:center; cursor: pointer; }
         .category-button.active-category { background: var(--color-dark-sage); color: white; font-weight: bold; }
         .category-icon { font-size: 1.8rem; margin-bottom: 5px; }
 
-        /* MENU ITEMS WITH IMAGES */
-        .menu-item-list{ margin-top:24px; display:block; }
+        /* MENU ITEMS */
+        .menu-item-list{ margin-top:24px; display:block; padding-bottom: 50px; }
         .menu-item-list.hidden{ display:none; }
+        .menu-item-list-title { border-bottom: 2px solid var(--color-sage); padding-bottom: 10px; color: var(--color-espresso); }
         .menu-item-card { 
             display:flex; 
             align-items:center; 
@@ -112,22 +112,11 @@
             animation: itemFadeIn 0.3s ease-out;
         }
         
-        /* New Image Style for Menu Items */
-        .menu-item-img {
-            width: 70px;
-            height: 70px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-right: 15px;
-            flex-shrink: 0;
-            background-color: #eee;
-        }
-
         .item-details{ flex-grow:1; }
         .item-name{ font-family:var(--font-title); font-size:1.1rem; font-weight:700; }
         .item-price{ font-size:1rem; font-weight:800; color:var(--color-dark-sage); }
-        .item-desc { font-size: 0.8rem; color: #7f8c8d; }
-        .add-to-order-button{ background:var(--color-sage); color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:700; }
+        .item-desc { font-size: 0.8rem; color: #7f8c8d; margin-top: 4px; }
+        .add-to-order-button{ background:var(--color-sage); color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -166,6 +155,7 @@
     </div>
   </main>
 </div>
+
 <div id="menu-page" class="page" style="display: none;">
   <header class="header">
     <h1 class="cafe-title">Menu</h1>
@@ -184,114 +174,66 @@
     </p>
 
     <div id="category-buttons" class="category-grid">
-        <button id="btn-sandwiches" class="category-button" onclick="showCategory('sandwiches', this)" tabindex="0">
-          <span class="category-icon">🥪</span>
-          <span class="category-name">Sandwiches</span>
+        <button class="category-button" onclick="showCategory('sandwiches', this)">
+          <span class="category-icon">🥪</span><span class="category-name">Sandwiches</span>
         </button>
-        <button id="btn-pizza" class="category-button" onclick="showCategory('pizza', this)" tabindex="0">
-          <span class="category-icon">🍕</span>
-          <span class="category-name">Pizza</span>
+        <button class="category-button" onclick="showCategory('pizza', this)">
+          <span class="category-icon">🍕</span><span class="category-name">Pizza</span>
         </button>
-        <button id="btn-burger" class="category-button" onclick="showCategory('burger', this)" tabindex="0">
-            <span class="category-icon">🍔</span>
-            <span class="category-name">Burger</span>
+        <button class="category-button" onclick="showCategory('burger', this)">
+            <span class="category-icon">🍔</span><span class="category-name">Burger</span>
         </button>
-        <button id="btn-pasta" class="category-button" onclick="showCategory('pasta', this)" tabindex="0">
-            <span class="category-icon">🍝</span>
-            <span class="category-name">Pasta</span>
+        <button class="category-button" onclick="showCategory('pasta', this)">
+            <span class="category-icon">🍝</span><span class="category-name">Pasta</span>
         </button>
-        <button id="btn-chinese" class="category-button" onclick="showCategory('chinese', this)" tabindex="0">
-            <span class="category-icon">🥡</span>
-            <span class="category-name">Chinese</span>
+        <button class="category-button" onclick="showCategory('chinese', this)">
+            <span class="category-icon">🥡</span><span class="category-name">Chinese</span>
         </button>
-        <button id="btn-fries" class="category-button" onclick="showCategory('fries', this)" tabindex="0">
-            <span class="category-icon">🍟</span>
-            <span class="category-name">Fries</span>
+        <button class="category-button" onclick="showCategory('fries', this)">
+            <span class="category-icon">🍟</span><span class="category-name">Fries</span>
         </button>
-        <button id="btn-barbeque" class="category-button" onclick="showCategory('barbeque', this)" tabindex="0">
-            <span class="category-icon">🍢</span>
-            <span class="category-name">Barbeque</span>
+        <button class="category-button" onclick="showCategory('barbeque', this)">
+            <span class="category-icon">🍢</span><span class="category-name">Barbeque</span>
         </button>
-        <button id="btn-momos" class="category-button" onclick="showCategory('momos', this)" tabindex="0">
-            <span class="category-icon">🥟</span>
-            <span class="category-name">Momos</span>
+        <button class="category-button" onclick="showCategory('momos', this)">
+            <span class="category-icon">🥟</span><span class="category-name">Momos</span>
         </button>
-        <button id="btn-maggi" class="category-button" onclick="showCategory('maggi', this)" tabindex="0">
-            <span class="category-icon">🍜</span>
-            <span class="category-name">Maggi</span>
+        <button class="category-button" onclick="showCategory('maggi', this)">
+            <span class="category-icon">🍜</span><span class="category-name">Maggi</span>
         </button>
-        <button id="btn-tea" class="category-button" onclick="showCategory('tea', this)" tabindex="0">
-            <span class="category-icon">🍵</span>
-            <span class="category-name">Tea</span>
+        <button class="category-button" onclick="showCategory('tea', this)">
+            <span class="category-icon">🍵</span><span class="category-name">Tea</span>
         </button>
-        <button id="btn-shakes" class="category-button" onclick="showCategory('shakes', this)" tabindex="0">
-            <span class="category-icon">🥛</span>
-            <span class="category-name">Shakes</span
-        ></button>
-        <button id="btn-dch_specials" class="category-button" onclick="showCategory('dch_specials', this)" tabindex="0">
-            <span class="category-icon">🧇</span>
-            <span class="category-name">DCH Specials</span>
+        <button class="category-button" onclick="showCategory('shakes', this)">
+            <span class="category-icon">🥛</span><span class="category-name">Shakes</span>
         </button>
-        <button id="btn-coffee" class="category-button" onclick="showCategory('coffee', this)" tabindex="0">
-            <span class="category-icon">☕</span>
-            <span class="category-name">Hot Coffee</span>
+        <button class="category-button" onclick="showCategory('dch_specials', this)">
+            <span class="category-icon">🧇</span><span class="category-name">DCH Specials</span>
         </button>
-        <button id="btn-cold_coffee" class="category-button" onclick="showCategory('cold_coffee', this)" tabindex="0">
-            <span class="category-icon">🧊</span>
-            <span class="category-name">Cold Coffee</span>
+        <button class="category-button" onclick="showCategory('coffee', this)">
+            <span class="category-icon">☕</span><span class="category-name">Hot Coffee</span>
         </button>
-        <button id="btn-mocktails" class="category-button" onclick="showCategory('mocktails', this)" tabindex="0">
-            <span class="category-icon">🍹</span>
-            <span class="category-name">Mocktails</span>
+        <button class="category-button" onclick="showCategory('cold_coffee', this)">
+            <span class="category-icon">🧊</span><span class="category-name">Cold Coffee</span>
         </button>
-        <button id="btn-shots" class="category-button" onclick="showCategory('shots', this)" tabindex="0">
-            <span class="category-icon">🥃</span>
-            <span class="category-name">Shots</span>
+        <button class="category-button" onclick="showCategory('mocktails', this)">
+            <span class="category-icon">🍹</span><span class="category-name">Mocktails</span>
+        </button>
+        <button class="category-button" onclick="showCategory('shots', this)">
+            <span class="category-icon">🥃</span><span class="category-name">Shots</span>
         </button>
     </div>
 
     <div id="sandwiches-menu" class="menu-item-list hidden">
         <h3 class="menu-item-list-title">Sandwiches</h3>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Bread Butter</div><div class="item-desc">Classic slice of bread with a generous layer of butter.</div></div>
-            <div class="item-price">₹30</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Bread Butter', 30)">Add +</button></div>
-        </div>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Bombay Masala</div><div class="item-desc">Spicy potato filling with mint and sweet chutney.</div></div>
-            <div class="item-price">₹40</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Bombay Masala', 40)">Add +</button></div>
-        </div>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Masala Cheese</div><div class="item-desc">A spicy blend of masala and melted cheese, grilled.</div></div>
-            <div class="item-price">₹70</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Masala Cheese', 70)">Add +</button></div>
-        </div>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Cheese Chutney</div><div class="item-desc">Layered with fresh cilantro chutney and a slice of cheese.</div></div>
-            <div class="item-price">₹80</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Cheese Chutney', 80)">Add +</button></div>
-        </div>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Vegetable</div><div class="item-desc">Loaded with fresh cucumber, tomato, onion, and mint chutney.</div></div>
-            <div class="item-price">₹80</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Vegetable', 80)">Add +</button></div>
-        </div>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Vegetable Cheese</div><div class="item-desc">Fresh veggies, cheese, and special creamy dressing.</div></div>
-            <div class="item-price">₹100</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Vegetable Cheese', 100)">Add +</button></div>
-        </div>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Cheese Corn</div><div class="item-desc">Sweet corn, gooey cheese, and mild spices.</div></div>
-            <div class="item-price">₹120</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Cheese Corn', 120)">Add +</button></div>
-        </div>
-        <div class="menu-item-card">
-            <div class="item-details"><div class="item-name">Grill Paneer Special</div><div class="item-desc">Our special grilled sandwich loaded with paneer cubes and tikka seasoning.</div></div>
-            <div class="item-price">₹150</div>
-            <div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Grill Paneer Special', 150)">Add +</button></div>
-        </div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Bread Butter</div><div class="item-desc">Classic slice of bread with a generous layer of butter.</div></div><div class="item-price">₹30</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Bread Butter', 30)">Add +</button></div></div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Bombay Masala</div><div class="item-desc">Spicy potato filling with mint and sweet chutney.</div></div><div class="item-price">₹40</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Bombay Masala', 40)">Add +</button></div></div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Masala Cheese</div><div class="item-desc">A spicy blend of masala and melted cheese, grilled.</div></div><div class="item-price">₹70</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Masala Cheese', 70)">Add +</button></div></div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Cheese Chutney</div><div class="item-desc">Layered with fresh cilantro chutney and a slice of cheese.</div></div><div class="item-price">₹80</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Cheese Chutney', 80)">Add +</button></div></div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Vegetable</div><div class="item-desc">Loaded with fresh cucumber, tomato, onion, and mint chutney.</div></div><div class="item-price">₹80</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Vegetable', 80)">Add +</button></div></div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Vegetable Cheese</div><div class="item-desc">Fresh veggies, cheese, and special creamy dressing.</div></div><div class="item-price">₹100</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Vegetable Cheese', 100)">Add +</button></div></div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Cheese Corn</div><div class="item-desc">Sweet corn, gooey cheese, and mild spices.</div></div><div class="item-price">₹120</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Cheese Corn', 120)">Add +</button></div></div>
+        <div class="menu-item-card"><div class="item-details"><div class="item-name">Grill Paneer Special</div><div class="item-desc">Our special grilled sandwich loaded with paneer cubes and tikka seasoning.</div></div><div class="item-price">₹150</div><div class="item-action"><button class="add-to-order-button" onclick="addToOrder('Grill Paneer Special', 150)">Add +</button></div></div>
     </div>
 
     <div id="pizza-menu" class="menu-item-list hidden">
@@ -528,15 +470,24 @@
         document.querySelectorAll('.category-button').forEach(b => b.classList.remove('active-category'));
         if(btn) btn.classList.add('active-category');
         document.querySelectorAll('.menu-item-list').forEach(l => l.classList.add('hidden'));
+        
         const target = document.getElementById(cat + '-menu');
-        if(target) target.classList.remove('hidden');
+        if(target) {
+            target.classList.remove('hidden');
+            // Auto-scroll to the menu section
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 
     function showMenu() { document.getElementById('home-page').style.display='none'; document.getElementById('menu-page').style.display='block'; }
     function showHome() { document.getElementById('menu-page').style.display='none'; document.getElementById('home-page').style.display='block'; }
     function showCart() { renderCart(); document.getElementById('cart-modal').classList.add('open'); }
     function closeModal() { document.getElementById('cart-modal').classList.remove('open'); }
-    function openLocation() { window.open("https://www.google.com/maps/search/?api=1&query=Dhamnod+Coffee+House", '_blank'); }
+    
+    // Fixed: Opens Google Maps search for your cafe name
+    function openLocation() { 
+        window.open("https://www.google.com/maps/search/?api=1&query=DCH+Dhamnod+Coffee+House", '_blank'); 
+    }
 
     // Service Worker
     if ('serviceWorker' in navigator) {
@@ -545,4 +496,4 @@
 </script>
 </body>
 </html>
-
+    
