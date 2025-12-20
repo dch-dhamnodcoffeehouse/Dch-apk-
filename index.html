@@ -401,10 +401,100 @@
 <script>
     let cart = [];
     
+    // YOUR SPREADSHEET LINK
+    const sheetCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQysn0Aj4LdO3zWXYRqmyZInqcq0EPS6cPGRlccczj0g9qT3LPo0Kn0424C3XSQ45StT6c8wocbnQy6/pub?output=csv';
+
+    // "SMART MAP" - connects your spreadsheet names to website sections
+    const categoryMap = {
+        "sandwiches": "sandwiches", "sandwich": "sandwiches",
+        "pizza": "pizza", "pizzas": "pizza",
+        "burger": "burger", "burgers": "burger",
+        "pasta": "pasta",
+        "chinese": "chinese",
+        "fries": "fries", "french fries": "fries",
+        "barbeque": "barbeque", "bbq": "barbeque",
+        "momos": "momos",
+        "maggi": "maggi",
+        "tea": "tea", "chai": "tea",
+        "shakes": "shakes", "shake": "shakes",
+        "dch specials": "dch_specials", "specials": "dch_specials", "special": "dch_specials",
+        "coffee": "coffee", "hot coffee": "coffee",
+        "cold coffee": "cold_coffee", "cold_coffee": "cold_coffee",
+        "mocktails": "mocktails", "mocktail": "mocktails",
+        "shots": "shots"
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchMenuFromSheet();
+    });
+
+    function fetchMenuFromSheet() {
+        const loader = document.getElementById('loading-indicator');
+        if(loader) loader.style.display = 'block';
+
+        // MAGIC FIX: This adds a random time number to the URL.
+        // It forces the browser to get the NEWEST version, skipping the cache.
+        const noCacheUrl = sheetCsvUrl + "&t=" + Date.now();
+
+        Papa.parse(noCacheUrl, {
+            download: true,
+            header: true, 
+            complete: function(results) {
+                const data = results.data;
+                let itemsFound = 0;
+
+                // Clear existing items first so we don't have duplicates
+                document.querySelectorAll('.list-container').forEach(el => el.innerHTML = '');
+
+                data.forEach(row => {
+                    const values = Object.values(row);
+                    if(values.length < 3) return; 
+
+                    let rawCat = values[0] ? values[0].toString().toLowerCase().trim() : '';
+                    let catId = categoryMap[rawCat] || rawCat; 
+
+                    const name = values[1];
+                    const price = values[2];
+                    const desc = values[3] || '';
+
+                    if(catId && name && price) {
+                        const targetId = catId + '-menu';
+                        const container = document.querySelector(`#${targetId} .list-container`);
+                        
+                        if(container) {
+                            itemsFound++;
+                            const itemHTML = `
+                            <div class="menu-item-card">
+                                <div class="item-details">
+                                    <div class="item-name">${name}</div>
+                                    <div class="item-desc">${desc}</div>
+                                </div>
+                                <div class="item-price">₹${price}</div>
+                                <div class="item-action">
+                                    <button class="add-to-order-button" onclick="addToOrder('${name.replace(/'/g, "\\'")}', ${price})">Add +</button>
+                                </div>
+                            </div>`;
+                            container.innerHTML += itemHTML;
+                        }
+                    }
+                });
+                
+                if(loader) loader.style.display = 'none';
+            },
+            error: function(err) {
+                console.error("Error loading menu:", err);
+                if(loader) loader.textContent = "Error loading menu.";
+            }
+        });
+    }
+
+    // --- CART FUNCTIONS ---
     function showToast(msg) {
         const t = document.getElementById('item-toast');
-        t.textContent = msg; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
+        if(t) {
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
     }
     
     function updateCartCount() {
@@ -474,7 +564,6 @@
         const target = document.getElementById(cat + '-menu');
         if(target) {
             target.classList.remove('hidden');
-            // Auto-scroll to the menu section
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
@@ -484,16 +573,15 @@
     function showCart() { renderCart(); document.getElementById('cart-modal').classList.add('open'); }
     function closeModal() { document.getElementById('cart-modal').classList.remove('open'); }
     
-    // Fixed: Opens Google Maps search for your cafe name
     function openLocation() { 
         window.open("https://www.google.com/maps/search/?api=1&query=DCH+Dhamnod+Coffee+House", '_blank'); 
     }
 
-    // Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
     }
 </script>
+
 </body>
 </html>
     
