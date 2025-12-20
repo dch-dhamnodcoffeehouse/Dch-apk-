@@ -1,88 +1,197 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="theme-color" content="#83977c"/>
-    <title>DCH – Dhamnod Coffee House</title>
+    <title>DCH Cafe</title>
     
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <style>
-        :root{ --color-cream:#f7f3e8; --color-espresso:#382b22; --color-sage:#a6b49e; --color-dark-sage:#83977c; --font-title:'Georgia', serif; --font-body:'Helvetica Neue', sans-serif; }
-        * { box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-        body{ margin:0; padding:0; background-color:var(--color-cream); color:var(--color-espresso); font-family:var(--font-body); }
-        
-        /* HEADER */
-        .header{ position:fixed; top:0; left:0; width:100%; background-color:var(--color-cream); padding:10px 15px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 4px rgba(56,43,34,0.1); z-index:1000; }
-        .cafe-title { font-family:var(--font-title); font-size:1.4rem; font-weight:700; margin:0; display:flex; align-items:center; }
-        .header-logo-img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; border: 2px solid var(--color-espresso); object-fit: cover; }
-        .nav-actions{ display: flex; gap: 8px; align-items: center; }
-        .nav-button{ background-color:var(--color-sage); color:white; border:none; padding:8px 12px; border-radius:6px; font-size:0.9rem; font-weight:600; cursor: pointer; }
+        :root{
+          --color-cream:#f7f3e8;
+          --color-espresso:#382b22;
+          --color-sage:#a6b49e;
+          --color-dark-sage:#83977c;
+          --font-title:'Georgia', serif;
+          --font-body:'Helvetica Neue', sans-serif;
+        }
 
-        /* PAGES */
-        .page{ min-height:100vh; padding-top:80px; padding-bottom: 40px; display:none; }
-        .page.active { display: block; animation: fadeIn 0.4s ease-out; }
+        * { box-sizing:border-box; }
+
+        body{
+          margin:0; padding:0;
+          background-color:var(--color-cream);
+          color:var(--color-espresso);
+          font-family:var(--font-body);
+        }
+
+        /* ------------------------------------- */
+        /* LOGO STYLES */
+        /* ------------------------------------- */
+        .cafe-title {
+            font-family:var(--font-title);
+            font-size:1.6rem;
+            font-weight:700;
+            margin:0;
+            flex-shrink:0; 
+            text-indent: -9999px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            width: 120px;
+            height: 40px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            /* Using a placeholder logo if base64 fails */
+            background-image: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAEAAgIDASIAAhEBAQEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAQIAAwQFBgf/xAA5EAACAgEDAwIEBAUEAQMFAAABAgADESEEBRIxQRMiUWEycYGRBhQjQqHRFLHB4fDxByMzUpL/xAAbAQACAwEBAQAAAAAAAAAAAAAAAQIDBAUGB//EADcRAAEDAgQDBgQEBQQCAgMAAAABAhEAAwQFEiExQQYhUWFxEyKBkaHBsdHwMjNCQuEV8RUzYnL/2gAARCAEAAgIDASIAAhEBAxEB/8AxtE+K8o3GvXzM8x7J/aYJpGjHpnxXm442G43n+c1zM8x7I+1H2u2I3G40D5jXW5Uu3p0RzCj+iS8x45jXgM3Yt47o2+03F8b7/AGm17kG+G79T4x5g/wAJ/wB7j/d+f/9Z'); 
+        }
+        @media (max-width:520px){
+            .cafe-title{ width: 90px; height: 30px; }
+        }
+
+        /* ------------------------------------- */
+        /* UI UTILITIES */
+        /* ------------------------------------- */
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: var(--color-cream); }
+        body::-webkit-scrollbar-thumb { background: var(--color-sage); border-radius: 4px; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes itemFadeIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* MENU & CART */
+        /* TOAST NOTIFICATION */
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 3000; }
+        .toast { background-color: var(--color-dark-sage); color: white; padding: 10px 20px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* PAGE STRUCTURE */
+        .page{ min-height:100vh; padding-top:80px; }
+        .page[style*="display: block"] { animation: fadeIn 0.4s ease-out; }
+
+        /* HEADER */
+        .header{ position:fixed; top:0; left:0; width:100%; background-color:var(--color-cream); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 4px rgba(56,43,34,0.1); z-index:1000; white-space:nowrap; }
+        .nav-actions{ display: flex; gap: 10px; align-items: center; }
+
+        .nav-button{
+          background-color:var(--color-sage); color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:1rem; font-weight:600; transition:background-color .18s ease, transform .06s; flex-shrink:0; display: flex; align-items: center; gap: 6px;
+        }
+        .nav-button:hover{ background-color:var(--color-dark-sage); }
+        
+        .nav-button.secondary { background-color: white; border: 1px solid #ddd; color: var(--color-espresso); }
+        .maps-icon { width: 18px; height: 18px; }
+
+        /* Cart */
         .cart-container { position: relative; display: inline-block; }
-        .cart-button{ background: none; border: none; font-size: 1.4rem; padding: 0 5px; cursor: pointer; }
-        #cart-count { position: absolute; top: -5px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; padding: 3px; font-size: 0.7rem; font-weight: 700; min-width: 18px; text-align: center; display:none; }
-        #cart-count.visible { display: block; }
-        
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-overlay.open { display: flex; }
-        .cart-modal-content { background-color: var(--color-cream); padding: 25px; border-radius: 16px; width: 90%; max-width: 400px; max-height: 85vh; display: flex; flex-direction: column; }
-        
-        /* MENU ITEMS */
-        .category-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:12px; margin:20px 20px; }
-        .category-button{ background:white; border:1px solid var(--color-sage); padding:10px; height:90px; border-radius:12px; display:flex; flex-direction:column; justify-content:center; align-items:center; cursor: pointer; }
-        .category-button.active-category { background: var(--color-dark-sage); color: white; font-weight: bold; }
-        
-        .menu-section { display: none; padding: 0 20px 50px 20px; }
-        .menu-section.active { display: block; }
-        .section-header { border-bottom: 2px solid var(--color-sage); padding-bottom: 10px; margin-bottom: 15px; font-family: var(--font-title); }
-        
-        .menu-item-card { display:flex; justify-content:space-between; align-items:center; padding:15px; margin-bottom:12px; background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
-        .item-name { font-weight: bold; font-size: 1.05rem; }
-        .item-desc { font-size: 0.85rem; color: #666; margin-top: 4px; }
-        .item-price { font-weight: bold; color: var(--color-dark-sage); }
-        .add-btn { background:var(--color-sage); color:white; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor: pointer; }
+        .cart-button{ background: none; border: none; color: var(--color-espresso); font-size: 1.4rem; cursor: pointer; padding: 0 5px; transition: color .18s ease, transform .06s; }
+        #cart-count { position: absolute; top: -5px; right: -10px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; font-weight: 700; line-height: 1; min-width: 18px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.2s; }
 
-        /* TOAST */
-        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        .toast.show { opacity: 1; }
-        
-        /* Loading */
-        .loader { text-align: center; padding: 20px; color: var(--color-sage); font-weight: bold; }
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(56, 43, 34, 0.7); display: none; justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.open { display: flex; opacity: 1; }
+        .cart-modal-content { background-color: var(--color-cream); color: var(--color-espresso); padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); max-width: 400px; width: 90%; transform: translateY(-50px); transition: transform 0.3s ease; }
+        .modal-overlay.open .cart-modal-content { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--color-sage); padding-bottom: 10px; margin-bottom: 15px; }
+        .modal-title { font-family: var(--font-title); font-size: 1.5rem; color: var(--color-dark-sage); margin: 0; }
+        .close-btn { background: none; border: none; font-size: 1.8rem; line-height: 1; cursor: pointer; color: var(--color-espresso); opacity: 0.6; }
+        #cart-items-list { list-style: none; padding: 0; margin: 0; font-size: 1.05rem; }
+        #cart-items-list li { padding: 8px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e0d9c9; }
+        .remove-item-btn { background: none; border: none; color: #e74c3c; font-weight: 700; cursor: pointer; padding: 5px 8px; }
+        .checkout-btn { background-color: var(--color-sage); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 1.1rem; width: 100%; transition: background-color 0.2s; }
+        .checkout-btn:hover { background-color: var(--color-dark-sage); }
+
+        /* CONTENT */
+        .content-area{ max-width:1200px; margin:0 auto; padding:20px; }
+        .section-title{ font-family:var(--font-title); font-size:2rem; text-align:center; margin-top:40px; margin-bottom:16px; color:var(--color-dark-sage); }
+        .cafe-brief{ text-align:center; font-size:1.05rem; line-height:1.6; max-width:680px; margin:0 auto 30px; }
+        .image-placeholder{ height:300px; background:#e5e0d4; border-radius:10px; margin-top:20px; box-shadow:0 4px 8px rgba(0,0,0,0.05); }
+
+        /* LOADING */
+        #loading-indicator { text-align: center; color: var(--color-dark-sage); padding: 40px; font-weight: bold; font-size: 1.2rem; }
+
+        /* MENU GRID */
+        .category-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:14px; margin-top:28px; }
+        .category-button{ background:white; border:1px solid var(--color-sage); color:var(--color-espresso); padding:14px 10px; height:100px; border-radius:12px; display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer; transition:all .18s; box-shadow:0 2px 5px rgba(0,0,0,0.04); }
+        .category-button:hover{ background:var(--color-sage); color:white; transform:scale(1.05); }
+        .category-button.active-category { background: var(--color-dark-sage); color: white; border-color: var(--color-espresso); transform: translateY(-2px); }
+        .category-icon { font-size: 2rem; margin-bottom: 8px; }
+
+        /* MENU ITEMS */
+        .menu-item-list{ margin-top:24px; border-top:1px solid #e5e0d4; padding-top:18px; display:block; scroll-margin-top: 80px; }
+        .menu-item-list.hidden{ display:none; }
+        .menu-item-card { opacity: 0; display:flex; justify-content:space-between; align-items:center; padding:12px 16px; margin-bottom:12px; background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all .2s ease-in-out; }
+        .menu-item-card:hover{ transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); background:#f0ebe0; }
+        .menu-item-list-title{ font-family:var(--font-title); font-size:1.6rem; text-align:center; color:var(--color-espresso); margin-bottom:18px; }
+        .item-details{ flex-grow:1; max-width:60%; }
+        .item-name{ font-family:var(--font-title); font-size:1.05rem; font-weight:700; color:var(--color-espresso); }
+        .item-price{ font-size:1.05rem; font-weight:800; color:var(--color-dark-sage); margin-left:14px; }
+        .item-desc { font-size: 0.85rem; color: var(--color-sage); margin-top: 2px; font-weight: 500; }
+        .item-action{ display:flex; align-items:center; gap:10px; margin-left:14px; }
+        .add-to-order-button{ background:var(--color-sage); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:700; transition:background-color .18s ease, transform .06s; }
+        .add-to-order-button:hover{ background:var(--color-dark-sage); transform: translateY(-1px); }
+
+        @media (max-width:520px){
+          .header{ padding:10px 12px; }
+          .nav-button{ padding:6px 10px; font-size:.95rem; }
+          .category-button{ height:90px; padding:12px; }
+        }
     </style>
-</head>
+    </head>
 <body>
 
-<div id="item-toast" class="toast"></div>
-
-<div id="home-page" class="page active">
-  <header class="header">
-    <div class="cafe-title"><img src="logo.png" class="header-logo-img"> DCH Cafe</div>
-    <div class="nav-actions">
-        <button class="nav-button" onclick="showMenu()">Menu</button>
-    </div>
-  </header>
-  <div style="padding: 20px; text-align: center;">
-    <h2>Welcome to DCH</h2>
-    <p>Delicious food & coffee in Dhamnod.</p>
-    <img src="special.jpg" style="width:100%; border-radius:10px; margin-bottom:20px;">
-    <button class="nav-button" style="background:var(--color-espresso); width:100%; padding:15px;" onclick="showMenu()">Order Now</button>
-  </div>
+<div id="toast-container">
+    <div id="item-toast" class="toast"></div>
 </div>
 
-<div id="menu-page" class="page">
+<div id="home-page" class="page" style="display: block;">
   <header class="header">
-    <h1 class="cafe-title">Menu</h1>
+    <h1 class="cafe-title">DCH Cafe</h1>
+    <div class="nav-actions">
+        <button class="nav-button secondary" onclick="openLocation()" title="Location">
+            <svg class="maps-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                <circle fill="#9e2a22" cx="12" cy="9" r="2.5"/>
+            </svg>
+            Location
+        </button>
+        <button class="nav-button" onclick="showMenu()">View Menu</button>
+    </div>
+  </header>
+
+  <main class="content-area home-content">
+    <h2 class="section-title">Welcome to Our Family Table</h2>
+    <p class="cafe-brief">
+      Nestled in the heart of the community, DCH Cafe is dedicated to crafting delightful experiences. We serve freshly brewed coffee, homemade treats, and wholesome food.
+    </p>
+    
+    <div style="text-align: center; margin-bottom: 25px; padding: 10px; background-color: #f0ebe0; border-radius: 8px;">
+        <h3 style="font-size: 1.2rem; margin: 0 0 5px; color: var(--color-dark-sage);">Hours of Operation</h3>
+        <p style="margin: 0;">Monday - Saturday: 9:00 AM - 9:00 PM</p>
+        <p style="margin: 0;">Sunday: 10:00 AM - 7:00 PM</p>
+        
+        <button class="nav-button secondary" style="margin: 15px auto 0;" onclick="openLocation()">
+            <svg class="maps-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                <circle fill="#9e2a22" cx="12" cy="9" r="2.5"/>
+            </svg>
+            Locate Us on Maps
+        </button>
+    </div>
+    
+    <div class="image-placeholder" style="background-color: var(--color-sage); padding: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h3 style="color: white; font-family: var(--font-title); font-size: 1.8rem; margin-bottom: 5px;">🌟 Today's Special 🌟</h3>
+        <h4 style="color: white; font-family: var(--font-title); font-size: 2.5rem; margin-top: 5px;">The Grill Paneer!</h4>
+        <p style="color: white; font-size: 1.1rem; text-align: center; max-width: 400px;">A fan-favorite grilled sandwich loaded with paneer, spices, and a special chutney.</p>
+        <button class="nav-button" style="background-color: var(--color-espresso); margin-top: 15px;" onclick="showMenu()">Order Now</button>
+    </div>
+
+  </main>
+</div>
+
+<div id="menu-page" class="page" style="display: none;">
+  <header class="header">
+    <h1 class="cafe-title">Our Delicious Menu</h1>
     <div class="nav-actions">
         <div class="cart-container">
             <button class="cart-button" onclick="showCart()">🛒</button>
@@ -92,238 +201,337 @@
     </div>
   </header>
 
-  <div id="category-buttons" class="category-grid">
-      <button class="category-button" onclick="filterCategory('sandwiches')">🥪 Sandwiches</button>
-      <button class="category-button" onclick="filterCategory('pizza')">🍕 Pizza</button>
-      <button class="category-button" onclick="filterCategory('burger')">🍔 Burger</button>
-      <button class="category-button" onclick="filterCategory('pasta')">🍝 Pasta</button>
-      <button class="category-button" onclick="filterCategory('chinese')">🥡 Chinese</button>
-      <button class="category-button" onclick="filterCategory('fries')">🍟 Fries</button>
-      <button class="category-button" onclick="filterCategory('barbeque')">🍢 Barbeque</button>
-      <button class="category-button" onclick="filterCategory('momos')">🥟 Momos</button>
-      <button class="category-button" onclick="filterCategory('maggi')">🍜 Maggi</button>
-      <button class="category-button" onclick="filterCategory('tea')">🍵 Tea</button>
-      <button class="category-button" onclick="filterCategory('shakes')">🥛 Shakes</button>
-      <button class="category-button" onclick="filterCategory('dch_specials')">🧇 Specials</button>
-      <button class="category-button" onclick="filterCategory('coffee')">☕ Hot Coffee</button>
-      <button class="category-button" onclick="filterCategory('cold_coffee')">🧊 Cold Coffee</button>
-      <button class="category-button" onclick="filterCategory('mocktails')">🍹 Mocktails</button>
-      <button class="category-button" onclick="filterCategory('shots')">🥃 Shots</button>
-  </div>
+  <main class="content-area menu-content">
+    <p class="cafe-brief">
+      Tap a category below to browse items and add them to your order.
+    </p>
 
-  <div id="loading-indicator" class="loader">Loading Menu...</div>
+    <div id="loading-indicator">Connecting to DCH Menu Database...</div>
+    <div id="category-container" class="category-grid"></div>
+    <div id="items-container"></div>
 
-  <div id="menu-container">
-      </div>
+  </main>
 </div>
 
 <div id="cart-modal" class="modal-overlay">
     <div class="cart-modal-content">
-        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ccc; padding-bottom:10px;">
-            <h3>Your Order</h3><button onclick="closeModal()" style="background:none; border:none; font-size:2rem;">×</button>
+        <div class="modal-header">
+            <h3 class="modal-title">🛒 Your Order Summary</h3>
+            <button class="close-btn" onclick="closeModal()">×</button>
         </div>
-        <div style="flex-grow:1; overflow-y:auto; padding:10px 0;">
-            <ul id="cart-items-list" style="padding:0; list-style:none;"></ul>
-            <div id="empty-cart-msg" style="text-align:center; padding:20px;">Cart is empty</div>
+        <div id="modal-content-area">
+            <div id="empty-cart-display" style="text-align: center; padding: 30px 0; color: var(--color-sage); opacity: 0.8;">
+                <span style="font-size: 3rem; margin-bottom: 10px; display: block;">☕</span>
+                <span class="empty-cart-text">Your cart is empty!</span>
+            </div>
+            <ul id="cart-items-list"></ul>
         </div>
-        <div id="cart-footer"></div>
+        <div class="modal-footer" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid var(--color-sage); text-align: center;">
+            <button class="checkout-btn" onclick="closeModal()">Continue Browsing</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // --- SETTINGS ---
-    const sheetCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQysn0Aj4LdO3zWXYRqmyZInqcq0EPS6cPGRlccczj0g9qT3LPo0Kn0424C3XSQ45StT6c8wocbnQy6/pub?output=csv';
-    
-    let allMenuItems = [];
-    let cart = [];
+    // --- CONFIGURATION ---
+    // This is YOUR Google Sheet Link
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQysn0Aj4LdO3zWXYRqmyZInqcq0EPS6cPGRlccczj0g9qT3LPo0Kn0424C3XSQ45StT6c8wocbnQy6/pub?output=csv";
 
-    // --- INITIALIZATION ---
-    window.addEventListener('load', () => {
-        // 1. Force Remove Old Service Workers (Fixes the "Stuck Data" issue)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                } 
-            });
-        }
-        
-        // 2. Fetch New Data
-        fetchMenu();
-    });
-
-    function fetchMenu() {
-        const loader = document.getElementById('loading-indicator');
-        
-        // Add random number to URL to prevent caching
-        const noCacheUrl = sheetCsvUrl + "&t=" + Date.now();
-
-        Papa.parse(noCacheUrl, {
-            download: true, header: true,
-            complete: function(results) {
-                allMenuItems = results.data; // Save all data
-                loader.style.display = 'none';
-                
-                // Show first category by default or let user choose
-                // For now, let's just wait for user click
-            },
-            error: function(err) {
-                loader.textContent = "Error loading menu. Check connection.";
-            }
-        });
-    }
-
-    // --- DISPLAY LOGIC ---
-    // Mapping messy sheet names to clean IDs
-    const categoryMap = {
-        "sandwiches": "sandwiches", "sandwich": "sandwiches",
-        "pizza": "pizza", "pizzas": "pizza",
-        "burger": "burger", "burgers": "burger",
-        "pasta": "pasta", "chinese": "chinese",
-        "fries": "fries", "french fries": "fries",
-        "barbeque": "barbeque", "bbq": "barbeque",
-        "momos": "momos", "maggi": "maggi",
-        "tea": "tea", "chai": "tea",
-        "shakes": "shakes", "shake": "shakes",
-        "dch specials": "dch_specials", "specials": "dch_specials",
-        "coffee": "coffee", "hot coffee": "coffee",
-        "cold coffee": "cold_coffee", "cold_coffee": "cold_coffee",
-        "mocktails": "mocktails", "shots": "shots"
+    // Icons Mapping (So the categories get the right emoji)
+    const ICONS = {
+        'Sandwiches': '🥪', 'Pizza': '🍕', 'Burger': '🍔', 'Pasta': '🍝', 
+        'Chinese': '🥡', 'Fries': '🍟', 'Barbeque': '🍢', 'Momos': '🥟', 
+        'Maggi': '🍜', 'Tea': '🍵', 'Shakes': '🥛', 'DCH Specials': '🧇',
+        'Hot Coffee': '☕', 'Cold Coffee': '🧊', 'Mocktails': '🍹', 'Shots': '🥃',
+        'default': '🍽️'
     };
 
-    function filterCategory(catKey) {
-        const container = document.getElementById('menu-container');
-        container.innerHTML = ''; // Clear previous items (Fixes duplicate issue)
+    // --- STATE VARIABLES ---
+    let cart = [];
+    let menuData = {};
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+        updateCartCount();
+        fetchMenu();
+    };
+
+    // --- FETCH & PARSE CSV ---
+    async function fetchMenu() {
+        try {
+            const response = await fetch(SHEET_URL);
+            if (!response.ok) throw new Error("Network response was not ok");
+            const csvText = await response.text();
+            
+            // Parse CSV logic
+            const lines = csvText.split('\n');
+            let startIndex = 0;
+            
+            // Find header row (looks for "Category" and "Price")
+            for(let i=0; i<lines.length; i++) {
+                if(lines[i].toLowerCase().includes('category') && lines[i].toLowerCase().includes('price')) {
+                    startIndex = i + 1;
+                    break;
+                }
+            }
+            
+            menuData = {};
+            
+            for(let i = startIndex; i < lines.length; i++) {
+                // Regex to split by comma ONLY if not inside quotes
+                const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                if (!row || row.length < 3) continue; // Skip bad rows
+
+                // Clean quotes if present
+                const clean = (txt) => txt ? txt.replace(/^"|"$/g, '').trim() : '';
+
+                // Assuming columns: 0=Category, 1=Name, 2=Price, 3=Description
+                // Note: If you edit columns in Sheet, adjust indices here.
+                const rawRow = lines[i].split(','); // Simple split fallback
+                
+                const cat = clean(rawRow[0]);
+                const name = clean(rawRow[1]);
+                const price = clean(rawRow[2]);
+                const desc = rawRow.length > 3 ? clean(rawRow.slice(3).join(',')) : '';
+
+                if (cat && name && price) {
+                    if (!menuData[cat]) menuData[cat] = [];
+                    menuData[cat].push({ name, price, desc });
+                }
+            }
+            
+            renderMenuUI();
+            
+        } catch (error) {
+            console.error("Error loading menu:", error);
+            document.getElementById('loading-indicator').innerText = "Using Offline Menu (Network Error)";
+            // You can add fallback data here if needed
+        }
+    }
+
+    // --- RENDER MENU TO HTML ---
+    function renderMenuUI() {
+        const catContainer = document.getElementById('category-container');
+        const itemsContainer = document.getElementById('items-container');
+        document.getElementById('loading-indicator').style.display = 'none';
         
+        catContainer.innerHTML = '';
+        itemsContainer.innerHTML = '';
+        
+        let isFirst = true;
+
+        for (const [category, items] of Object.entries(menuData)) {
+            // 1. Create Category Button
+            const btn = document.createElement('button');
+            btn.className = 'category-button';
+            if(isFirst) btn.classList.add('active-category');
+            
+            // Determine Icon
+            let iconChar = ICONS['default'];
+            // Fuzzy match for icon key
+            for (const key in ICONS) {
+                if (category.toLowerCase().includes(key.toLowerCase())) {
+                    iconChar = ICONS[key];
+                    break;
+                }
+            }
+
+            btn.innerHTML = `<span class="category-icon">${iconChar}</span><span class="category-name">${category}</span>`;
+            // Safe ID for scrolling
+            const safeId = category.replace(/[^a-zA-Z0-9]/g, '_');
+            
+            btn.onclick = () => showCategory(safeId, btn);
+            catContainer.appendChild(btn);
+            
+            // 2. Create Menu List Container
+            const listDiv = document.createElement('div');
+            listDiv.id = `menu-${safeId}`;
+            listDiv.className = `menu-item-list ${isFirst ? '' : 'hidden'}`;
+            
+            // Title
+            const title = document.createElement('h3');
+            title.className = 'menu-item-list-title';
+            title.innerText = category;
+            listDiv.appendChild(title);
+            
+            // Items
+            items.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'menu-item-card';
+                // Add fade animation style if first category
+                if (isFirst) {
+                    card.style.animation = `itemFadeIn 0.3s ease-out forwards`;
+                    card.style.animationDelay = `${index * 0.05}s`;
+                    card.style.opacity = 1;
+                }
+
+                card.innerHTML = `
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-desc">${item.desc}</div>
+                    </div>
+                    <div class="item-price">₹${item.price}</div>
+                    <div class="item-action">
+                        <button class="add-to-order-button" onclick="addToOrder('${item.name}', ${item.price})">Add</button>
+                    </div>
+                `;
+                listDiv.appendChild(card);
+            });
+            
+            itemsContainer.appendChild(listDiv);
+            isFirst = false;
+        }
+    }
+
+    // --- UI INTERACTIONS ---
+
+    function showCategory(safeId, clickedBtn) {
         // Highlight Button
         document.querySelectorAll('.category-button').forEach(b => b.classList.remove('active-category'));
-        // (Optional: add active class to clicked button if passed)
-
-        // Create Section Header
-        const sectionDiv = document.createElement('div');
-        sectionDiv.className = 'menu-section active';
-        sectionDiv.innerHTML = `<h3 class="section-header">${catKey.toUpperCase().replace('_', ' ')}</h3>`;
+        clickedBtn.classList.add('active-category');
         
-        let count = 0;
-
-        allMenuItems.forEach(row => {
-            const vals = Object.values(row);
-            if(vals.length < 3) return;
-
-            // Normalize category from sheet
-            let sheetCat = vals[0] ? vals[0].toString().toLowerCase().trim() : '';
-            let mappedCat = categoryMap[sheetCat] || sheetCat;
-
-            if(mappedCat === catKey) {
-                count++;
-                const name = vals[1];
-                const price = vals[2];
-                const desc = vals[3] || '';
-                
-                const itemHTML = `
-                <div class="menu-item-card">
-                    <div>
-                        <div class="item-name">${name}</div>
-                        <div class="item-desc">${desc}</div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div class="item-price">₹${price}</div>
-                        <button class="add-btn" onclick="addToOrder('${name.replace(/'/g, "\\'")}', ${price})">ADD</button>
-                    </div>
-                </div>`;
-                sectionDiv.innerHTML += itemHTML;
-            }
+        // Hide all lists
+        document.querySelectorAll('.menu-item-list').forEach(list => {
+            list.classList.add('hidden');
+            // Reset animations
+            Array.from(list.children).forEach(child => child.style.animation = 'none');
         });
-
-        if(count === 0) {
-            sectionDiv.innerHTML += `<p style="text-align:center; color:#999;">No items found in this category.</p>`;
+        
+        // Show selected list
+        const targetList = document.getElementById(`menu-${safeId}`);
+        if(targetList) {
+            targetList.classList.remove('hidden');
+            // Re-trigger animation
+            const cards = targetList.querySelectorAll('.menu-item-card');
+            cards.forEach((card, index) => {
+                card.style.animation = `itemFadeIn 0.3s ease-out forwards`;
+                card.style.animationDelay = `${index * 0.05}s`;
+            });
+            targetList.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        
-        container.appendChild(sectionDiv);
-        
-        // Scroll to menu
-        document.getElementById('category-buttons').scrollIntoView({behavior:'smooth'});
     }
 
-    // --- CART LOGIC ---
     function addToOrder(name, price) {
-        const item = cart.find(i => i.name === name);
-        if(item) item.quantity++;
-        else cart.push({name, price, quantity: 1});
-        
-        showToast(`${name} added!`);
-        updateCartCount();
-    }
-
-    function updateCartCount() {
-        const count = document.getElementById('cart-count');
-        const total = cart.reduce((sum, i) => sum + i.quantity, 0);
-        count.textContent = total;
-        if(total > 0) count.classList.add('visible');
-        else count.classList.remove('visible');
-    }
-
-    function renderCart() {
-        const list = document.getElementById('cart-items-list');
-        const footer = document.getElementById('cart-footer');
-        const empty = document.getElementById('empty-cart-msg');
-        
-        if(cart.length === 0) {
-            list.innerHTML = ''; empty.style.display='block'; footer.innerHTML=''; return;
+        price = parseInt(price); // Ensure number
+        const existing = cart.find(item => item.name === name);
+        if (existing) {
+            existing.quantity++;
+            showToast(`Added another: ${name}`);
+        } else {
+            cart.push({ name, price, quantity: 1 });
+            showToast(`${name} added!`);
         }
-        empty.style.display='none';
-        
-        let total = 0;
-        list.innerHTML = cart.map(item => {
-            total += item.price * item.quantity;
-            return `<li style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed #ddd;">
-                <div><b>${item.name}</b> <br> <small>₹${item.price} x ${item.quantity}</small></div>
-                <button onclick="removeItem('${item.name}')" style="color:red; background:none; border:none; font-weight:bold;">Remove</button>
-            </li>`;
-        }).join('');
-        
-        footer.innerHTML = `
-            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:15px; font-size:1.1rem;">
-                <span>Total:</span><span>₹${total}</span>
-            </div>
-            <button onclick="orderWhatsApp()" style="width:100%; background:#25D366; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; margin-top:10px;">Order on WhatsApp</button>
-        `;
+        updateCartCount();
     }
 
     function removeItem(name) {
         const idx = cart.findIndex(i => i.name === name);
-        if(idx > -1) cart.splice(idx, 1); // Remove item completely
-        updateCartCount(); renderCart();
+        if (idx > -1) {
+            if (cart[idx].quantity > 1) {
+                cart[idx].quantity--;
+            } else {
+                cart.splice(idx, 1);
+            }
+            renderCartItems(); // Refresh modal
+            updateCartCount();
+        }
     }
 
-    function orderWhatsApp() {
-        if(cart.length===0) return;
-        let msg = "*Order for DCH Cafe:* \n";
-        let total = 0;
-        cart.forEach(i => { msg += `${i.name} (x${i.quantity})\n`; total += i.price * i.quantity; });
-        msg += `\n*Total: ₹${total}*`;
-        window.open(`https://wa.me/918982628715?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
+    // --- HELPER FUNCTIONS ---
     function showToast(msg) {
         const t = document.getElementById('item-toast');
-        t.textContent = msg; t.classList.add('show');
+        t.innerText = msg;
+        t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2000);
     }
 
-    // --- NAVIGATION ---
-    function showMenu() {
-        document.getElementById('home-page').classList.remove('active');
-        document.getElementById('menu-page').classList.add('active');
+    function updateCartCount() {
+        const count = cart.reduce((sum, i) => sum + i.quantity, 0);
+        const badge = document.getElementById('cart-count');
+        badge.innerText = count;
+        badge.style.opacity = count > 0 ? 1 : 0;
     }
-    function showHome() {
-        document.getElementById('menu-page').classList.remove('active');
-        document.getElementById('home-page').classList.add('active');
-    }
-    function showCart() { renderCart(); document.getElementById('cart-modal').classList.add('open'); }
-    function closeModal() { document.getElementById('cart-modal').classList.remove('open'); }
 
+    function showMenu() {
+        document.getElementById('home-page').style.display = 'none';
+        document.getElementById('menu-page').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    function showHome() {
+        document.getElementById('menu-page').style.display = 'none';
+        document.getElementById('home-page').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    function openLocation() {
+        window.open("https://www.google.com/maps/search/?api=1&query=DCH+Dhamnod+Coffee+House", '_blank');
+    }
+
+    // --- CART MODAL LOGIC ---
+    function showCart() {
+        renderCartItems();
+        document.getElementById('cart-modal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('cart-modal').classList.remove('open');
+    }
+
+    function renderCartItems() {
+        const list = document.getElementById('cart-items-list');
+        const empty = document.getElementById('empty-cart-display');
+        const footer = document.querySelector('.modal-footer');
+        
+        if (cart.length === 0) {
+            list.innerHTML = '';
+            empty.style.display = 'block';
+            footer.innerHTML = `<button class="checkout-btn" onclick="closeModal()">Continue Browsing</button>`;
+            return;
+        }
+
+        empty.style.display = 'none';
+        let total = 0;
+        
+        list.innerHTML = cart.map(item => {
+            total += item.price * item.quantity;
+            return `
+            <li>
+                <span>${item.name}</span>
+                <div style="display:flex; align-items:center;">
+                    <span style="margin-right:8px; font-weight:bold;">₹${item.price * item.quantity}</span>
+                    <span class="item-qty">${item.quantity}x</span>
+                    <button class="remove-item-btn" onclick="removeItem('${item.name}')">×</button>
+                </div>
+            </li>`;
+        }).join('');
+
+        footer.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-weight:bold; font-size:1.2rem;">
+                <span>Total:</span><span>₹${total}</span>
+            </div>
+            <button class="checkout-btn" style="background-color:#25D366; margin-bottom:10px;" onclick="placeOrderWhatsApp()">Order on WhatsApp 💬</button>
+            <button class="checkout-btn" onclick="closeModal()">Add More Items</button>
+        `;
+    }
+
+    function placeOrderWhatsApp() {
+        if(cart.length === 0) return;
+        const number = "918982628715"; // Your Number
+        let msg = "DCH Cafe Order:\n\n";
+        let total = 0;
+        cart.forEach((item, i) => {
+            msg += `${i+1}. ${item.name} x${item.quantity} (₹${item.price*item.quantity})\n`;
+            total += item.price * item.quantity;
+        });
+        msg += `\n*Total Bill: ₹${total}*`;
+        window.open(`https://wa.me/${number}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // PWA Support
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(console.error);
+    }
 </script>
 </body>
 </html>
-
