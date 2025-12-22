@@ -28,18 +28,18 @@
         }
 
         /* ------------------------------------- */
-        /* LOGO & HEADER STYLES (UPDATED) */
+        /* LOGO & HEADER STYLES */
         /* ------------------------------------- */
         .header-left {
             display: flex;
             align-items: center;
-            gap: 10px; /* Space between logo and text */
+            gap: 10px;
         }
 
         .cafe-logo {
-            height: 45px; /* Size of the logo */
+            height: 45px;
             width: auto;
-            border-radius: 50%; /* Makes logo round (remove this line if you want square) */
+            border-radius: 50%;
         }
 
         .cafe-title {
@@ -53,7 +53,7 @@
 
         @media (max-width:520px){
             .cafe-title{ font-size: 1.3rem; }
-            .cafe-logo { height: 35px; } /* Smaller logo on mobile */
+            .cafe-logo { height: 35px; }
             .header{ padding:10px 12px; }
             .nav-button{ padding:6px 10px; font-size:.95rem; }
             .category-button{ height:90px; padding:12px; }
@@ -149,7 +149,7 @@
 <div id="home-page" class="page" style="display: block;">
   <header class="header">
     <div class="header-left">
-        <img src="logo.png" alt="Logo" class="cafe-logo">
+        <img src="logo.png" alt="Logo" class="cafe-logo" onerror="this.style.display='none'">
         <h1 class="cafe-title">DCH Cafe</h1>
     </div>
     <div class="nav-actions">
@@ -197,7 +197,7 @@
 <div id="menu-page" class="page" style="display: none;">
   <header class="header">
     <div class="header-left">
-        <img src="logo.png" alt="Logo" class="cafe-logo">
+        <img src="logo.png" alt="Logo" class="cafe-logo" onerror="this.style.display='none'">
         <h1 class="cafe-title">Delicious Menu</h1>
     </div>
     <div class="nav-actions">
@@ -242,8 +242,8 @@
 
 <script>
     // --- CONFIGURATION ---
-    // This is YOUR Google Sheet Link
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1eM5ugF4pZ2SNRrr0cd-3WbA_y4g22EXQf17BmHnQwc4/edit?usp=sharing";
+    // ✅ UPDATED: Direct CSV Link
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQysn0Aj4LdO3zWXYRqmyZInqcq0EPS6cPGRlccczj0g9qT3LPo0Kn0424C3XSQ45StT6c8wocbnQy6/pub?output=csv";
 
     // Icons Mapping (So the categories get the right emoji)
     const ICONS = {
@@ -286,21 +286,25 @@
             menuData = {};
             
             for(let i = startIndex; i < lines.length; i++) {
-                // Regex to split by comma ONLY if not inside quotes
+                // Regex handles commas inside quotes
                 const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                if (!row || row.length < 3) continue; // Skip bad rows
+                if (!row) continue; // Skip bad rows
 
-                // Clean quotes if present
+                // Clean quotes function
                 const clean = (txt) => txt ? txt.replace(/^"|"$/g, '').trim() : '';
-
-                // Assuming columns: 0=Category, 1=Name, 2=Price, 3=Description
-                // Note: If you edit columns in Sheet, adjust indices here.
-                const rawRow = lines[i].split(','); // Simple split fallback
                 
-                const cat = clean(rawRow[0]);
-                const name = clean(rawRow[1]);
-                const price = clean(rawRow[2]);
-                const desc = rawRow.length > 3 ? clean(rawRow.slice(3).join(',')) : '';
+                // Map columns based on your likely sheet structure:
+                // Col 0 = Category, Col 1 = Name, Col 2 = Price, Col 3 = Description
+                // If regex split fails, try simple split for safety
+                let parts = row;
+                if(parts.length < 3) {
+                     parts = lines[i].split(',');
+                }
+
+                const cat = clean(parts[0]);
+                const name = clean(parts[1]);
+                const price = clean(parts[2]);
+                const desc = parts.length > 3 ? clean(parts.slice(3).join(',')) : '';
 
                 if (cat && name && price) {
                     if (!menuData[cat]) menuData[cat] = [];
@@ -312,8 +316,7 @@
             
         } catch (error) {
             console.error("Error loading menu:", error);
-            document.getElementById('loading-indicator').innerText = "Using Offline Menu (Network Error)";
-            // You can add fallback data here if needed
+            document.getElementById('loading-indicator').innerHTML = "Error loading menu.<br>Check internet connection.";
         }
     }
 
@@ -327,8 +330,13 @@
         itemsContainer.innerHTML = '';
         
         let isFirst = true;
+        
+        // Count total items to check if data loaded
+        let totalItems = 0;
 
         for (const [category, items] of Object.entries(menuData)) {
+            totalItems += items.length;
+            
             // 1. Create Category Button
             const btn = document.createElement('button');
             btn.className = 'category-button';
@@ -336,7 +344,6 @@
             
             // Determine Icon
             let iconChar = ICONS['default'];
-            // Fuzzy match for icon key
             for (const key in ICONS) {
                 if (category.toLowerCase().includes(key.toLowerCase())) {
                     iconChar = ICONS[key];
@@ -345,7 +352,6 @@
             }
 
             btn.innerHTML = `<span class="category-icon">${iconChar}</span><span class="category-name">${category}</span>`;
-            // Safe ID for scrolling
             const safeId = category.replace(/[^a-zA-Z0-9]/g, '_');
             
             btn.onclick = () => showCategory(safeId, btn);
@@ -366,7 +372,6 @@
             items.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'menu-item-card';
-                // Add fade animation style if first category
                 if (isFirst) {
                     card.style.animation = `itemFadeIn 0.3s ease-out forwards`;
                     card.style.animationDelay = `${index * 0.05}s`;
@@ -389,27 +394,26 @@
             itemsContainer.appendChild(listDiv);
             isFirst = false;
         }
+        
+        if(totalItems === 0) {
+             document.getElementById('loading-indicator').style.display = 'block';
+             document.getElementById('loading-indicator').innerHTML = "Menu empty.<br>Check Google Sheet format.";
+        }
     }
 
     // --- UI INTERACTIONS ---
-
     function showCategory(safeId, clickedBtn) {
-        // Highlight Button
         document.querySelectorAll('.category-button').forEach(b => b.classList.remove('active-category'));
         clickedBtn.classList.add('active-category');
         
-        // Hide all lists
         document.querySelectorAll('.menu-item-list').forEach(list => {
             list.classList.add('hidden');
-            // Reset animations
             Array.from(list.children).forEach(child => child.style.animation = 'none');
         });
         
-        // Show selected list
         const targetList = document.getElementById(`menu-${safeId}`);
         if(targetList) {
             targetList.classList.remove('hidden');
-            // Re-trigger animation
             const cards = targetList.querySelectorAll('.menu-item-card');
             cards.forEach((card, index) => {
                 card.style.animation = `itemFadeIn 0.3s ease-out forwards`;
@@ -420,7 +424,7 @@
     }
 
     function addToOrder(name, price) {
-        price = parseInt(price); // Ensure number
+        price = parseInt(price);
         const existing = cart.find(item => item.name === name);
         if (existing) {
             existing.quantity++;
@@ -440,7 +444,7 @@
             } else {
                 cart.splice(idx, 1);
             }
-            renderCartItems(); // Refresh modal
+            renderCartItems();
             updateCartCount();
         }
     }
@@ -473,7 +477,8 @@
     }
 
     function openLocation() {
-        window.open("https://www.google.com/maps/search/?api=1&query=DCH+Dhamnod+Coffee+House", '_blank');
+        // ✅ UPDATED: Link to Search on Google Maps
+        window.open("https://www.google.com/maps/search/?api=1&query=Dhamnod+Coffee+House", '_blank');
     }
 
     // --- CART MODAL LOGIC ---
@@ -525,7 +530,7 @@
 
     function placeOrderWhatsApp() {
         if(cart.length === 0) return;
-        const number = "918982628715"; // Your Number
+        const number = "918982628715"; 
         let msg = "DCH Cafe Order:\n\n";
         let total = 0;
         cart.forEach((item, i) => {
@@ -536,7 +541,7 @@
         window.open(`https://wa.me/${number}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // PWA Support
+    // PWA Support (will work when you add sw.js file)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(console.error);
     }
