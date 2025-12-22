@@ -242,10 +242,9 @@
 
 <script>
     // --- CONFIGURATION ---
-    // ✅ UPDATED: Direct CSV Link
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQtGo8K35XN0ZpGKzPEHP2j5Vq6f9Sz9kl2hPepya2NSy9UXL13NcMjs-9XnRuIN4HOPWgWCGRCthYh/pub?output=csv";
 
-    // Icons Mapping (So the categories get the right emoji)
+    // Icons Mapping
     const ICONS = {
         'Sandwiches': '🥪', 'Pizza': '🍕', 'Burger': '🍔', 'Pasta': '🍝', 
         'Chinese': '🥡', 'Fries': '🍟', 'Barbeque': '🍢', 'Momos': '🥟', 
@@ -264,18 +263,17 @@
         fetchMenu();
     };
 
-    // --- FETCH & PARSE CSV ---
+    // --- FETCH & PARSE CSV (IMPROVED) ---
     async function fetchMenu() {
         try {
             const response = await fetch(SHEET_URL);
             if (!response.ok) throw new Error("Network response was not ok");
             const csvText = await response.text();
             
-            // Parse CSV logic
             const lines = csvText.split('\n');
             let startIndex = 0;
             
-            // Find header row (looks for "Category" and "Price")
+            // Find header row automatically
             for(let i=0; i<lines.length; i++) {
                 if(lines[i].toLowerCase().includes('category') && lines[i].toLowerCase().includes('price')) {
                     startIndex = i + 1;
@@ -286,25 +284,23 @@
             menuData = {};
             
             for(let i = startIndex; i < lines.length; i++) {
-                // Regex handles commas inside quotes
-                const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                if (!row) continue; // Skip bad rows
+                const line = lines[i].trim();
+                if (!line) continue;
 
-                // Clean quotes function
-                const clean = (txt) => txt ? txt.replace(/^"|"$/g, '').trim() : '';
+                // IMPROVED CSV PARSING REGEX
+                // This splits by comma ONLY if the comma is not inside quotes
+                const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+                // Clean up quotes (remove " from start/end)
+                const clean = (txt) => txt ? txt.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : '';
                 
-                // Map columns based on your likely sheet structure:
-                // Col 0 = Category, Col 1 = Name, Col 2 = Price, Col 3 = Description
-                // If regex split fails, try simple split for safety
-                let parts = row;
-                if(parts.length < 3) {
-                     parts = lines[i].split(',');
-                }
-
+                // MAPPING: 0=Category, 1=Name, 2=Price, 3=Description
                 const cat = clean(parts[0]);
                 const name = clean(parts[1]);
                 const price = clean(parts[2]);
-                const desc = parts.length > 3 ? clean(parts.slice(3).join(',')) : '';
+                
+                // Check if description exists (column 4), otherwise empty string
+                const desc = parts.length > 3 ? clean(parts[3]) : '';
 
                 if (cat && name && price) {
                     if (!menuData[cat]) menuData[cat] = [];
@@ -330,8 +326,6 @@
         itemsContainer.innerHTML = '';
         
         let isFirst = true;
-        
-        // Count total items to check if data loaded
         let totalItems = 0;
 
         for (const [category, items] of Object.entries(menuData)) {
@@ -342,7 +336,6 @@
             btn.className = 'category-button';
             if(isFirst) btn.classList.add('active-category');
             
-            // Determine Icon
             let iconChar = ICONS['default'];
             for (const key in ICONS) {
                 if (category.toLowerCase().includes(key.toLowerCase())) {
@@ -362,13 +355,11 @@
             listDiv.id = `menu-${safeId}`;
             listDiv.className = `menu-item-list ${isFirst ? '' : 'hidden'}`;
             
-            // Title
             const title = document.createElement('h3');
             title.className = 'menu-item-list-title';
             title.innerText = category;
             listDiv.appendChild(title);
             
-            // Items
             items.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'menu-item-card';
@@ -378,10 +369,13 @@
                     card.style.opacity = 1;
                 }
 
+                // CONDITIONAL DESCRIPTION: Only show if it exists
+                const descHTML = item.desc ? `<div class="item-desc">${item.desc}</div>` : '';
+
                 card.innerHTML = `
                     <div class="item-details">
                         <div class="item-name">${item.name}</div>
-                        <div class="item-desc">${item.desc}</div>
+                        ${descHTML}
                     </div>
                     <div class="item-price">₹${item.price}</div>
                     <div class="item-action">
@@ -408,14 +402,17 @@
         
         document.querySelectorAll('.menu-item-list').forEach(list => {
             list.classList.add('hidden');
-            Array.from(list.children).forEach(child => child.style.animation = 'none');
         });
         
         const targetList = document.getElementById(`menu-${safeId}`);
         if(targetList) {
             targetList.classList.remove('hidden');
             const cards = targetList.querySelectorAll('.menu-item-card');
+            // Re-trigger animation
             cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.animation = 'none';
+                card.offsetHeight; /* trigger reflow */
                 card.style.animation = `itemFadeIn 0.3s ease-out forwards`;
                 card.style.animationDelay = `${index * 0.05}s`;
             });
@@ -477,7 +474,7 @@
     }
 
     function openLocation() {
-        // ✅ UPDATED: Link to Search on Google Maps
+        // Updated map link
         window.open("https://www.google.com/maps/search/?api=1&query=Dhamnod+Coffee+House", '_blank');
     }
 
